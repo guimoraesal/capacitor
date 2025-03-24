@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
+
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 import org.json.JSONException;
@@ -193,6 +195,10 @@ public class CapacitorHttpUrlConnection implements ICapacitorHttpUrlConnection {
         String contentType = connection.getRequestProperty("Content-Type");
         String dataString = "";
 
+        if (bodyType.equals("formData")){
+            contentType = "formData";
+        }
+
         if (contentType == null || contentType.isEmpty()) return;
 
         if (contentType.contains("application/json")) {
@@ -224,10 +230,46 @@ public class CapacitorHttpUrlConnection implements ICapacitorHttpUrlConnection {
                 this.writeRequestBody(body.toString());
             }
         } else if (bodyType != null && bodyType.equals("formData")) {
-            this.writeFormDataRequestBody(contentType, body.toJSArray());
+
+            String boundary = extractBoundaryFromContentType(contentType);
+            if (boundary == null) {
+                // If no boundary is provided, generate a random one and set the Content-Type header accordingly
+                // or otherwise servers will not be able to parse the request body. Browsers do this automatically
+                // but here we need to do this manually in order to comply with browser api behavior.
+                boundary = UUID.randomUUID().toString();
+                connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+            }
+
+            this.writeFormDataRequestBody(boundary, body.toJSArray());
+
         } else {
             this.writeRequestBody(body.toString());
         }
+    }
+
+    public static String extractBoundaryFromContentType(String contentType) {
+        String boundaryPrefix = "boundary=";
+        int boundaryIndex = contentType.indexOf(boundaryPrefix);
+        if (boundaryIndex == -1) {
+            return null;
+        }
+
+        // Extract the substring starting right after "boundary="
+        String boundary = contentType.substring(boundaryIndex + boundaryPrefix.length());
+
+        // Find the end of the boundary value by looking for the next ";"
+        int endIndex = boundary.indexOf(";");
+        if (endIndex != -1) {
+            boundary = boundary.substring(0, endIndex);
+        }
+
+        // Remove surrounding double quotes if present
+        boundary = boundary.trim();
+        if (boundary.startsWith("\"") && boundary.endsWith("\"")) {
+            boundary = boundary.substring(1, boundary.length() - 1);
+        }
+
+        return boundary;
     }
 
     /**
@@ -260,9 +302,9 @@ public class CapacitorHttpUrlConnection implements ICapacitorHttpUrlConnection {
         }
     }
 
-    private void writeFormDataRequestBody(String contentType, JSArray entries) throws IOException, JSONException {
+    //Alterado para teste
+    private void writeFormDataRequestBody(String boundary, JSArray entries) throws IOException, JSONException {
         try (DataOutputStream os = new DataOutputStream(connection.getOutputStream())) {
-            String boundary = contentType.split(";")[1].split("=")[1];
             String lineEnd = "\r\n";
             String twoHyphens = "--";
 
