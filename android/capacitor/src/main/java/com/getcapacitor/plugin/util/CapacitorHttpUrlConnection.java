@@ -503,6 +503,7 @@ public class CapacitorHttpUrlConnection implements ICapacitorHttpUrlConnection {
         return result;
     }
 
+    //Teste
     public void setSSLSocketFactory(Bridge bridge) {
         // Attach SSL Certificates if Enterprise Plugin is available
         try {
