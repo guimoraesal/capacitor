@@ -7,10 +7,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ionic-team/capacitor.git"
+    "url": "git+https://github.com/guimoraesal/capacitor.git"
   },
   "bugs": {
-    "url": "https://github.com/ionic-team/capacitor/issues"
+    "url": "https://github.com/guimoraesal/capacitor/issues"
   },
   "files": [
     "capacitor/build.gradle",
@@ -26,6 +26,7 @@
     "@capacitor/core": "^6.1.0"
   },
   "publishConfig": {
+    "registry": "https://npm.pkg.github.com/",
     "access": "public"
   }
 }
