@@ -26,6 +26,7 @@
     "@capacitor/core": "^6.1.0"
   },
   "publishConfig": {
+    "registry": "https://npm.pkg.github.com/",
     "access": "public"
   }
 }
